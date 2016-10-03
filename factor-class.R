@@ -2,53 +2,53 @@ library(magrittr)
 library(tidyverse)
 
 create_bnfactor <- function(variable_names, variable_cardinality, values){
-  
-    # Attributes
+    
+    # Check input
     if(length(values) != prod(variable_cardinality))
         stop("Bad dimensions in values")
     if(length(variable_names) != length(variable_cardinality))
         stop("Bad dimensions in cardinality")
     
-    result <- list(var = variable_names,
-                   card = as.integer(variable_cardinality),
-                   val = values)
-    class(result) <- "bnfactor"
-    
-    # Methods
-    warning("Pendiente meter aquí los métodos de get y set, para hacerlo más usable")
-    
-    
-    result
-    
+    # Return functions
+    objeto <- list(get_variable_names = function() variable_names,
+                   get_variable_cardinality = function() variable_cardinality,
+                   get_all_values = function() values,
+                   print = function() 
+                       unfold_bnfactor(variable_names, variable_cardinality, values),
+                   get_value = function(variable_assignment)
+                       values[get_value_index(variable_names, variable_cardinality, values, variable_assignment)],
+                   set_value = function(variable_assignment, value)
+                       values[get_value_index(variable_names, variable_cardinality, values, variable_assignment)] <<- value)
+    class(objeto) <- "bnfactor"
+    objeto
+        
 }
 
-unfold_bnfactor <- function(bnfactor){
+
+unfold_bnfactor <- function(variable_names, variable_cardinality, values){
     
-    if(class(bnfactor) != "bnfactor") 
-        stop("Argument must be a bnfactor")
-    
-    nrows <- length(bnfactor$val)
-    ncols <- length(bnfactor$var) + 1
-    numbers <- lapply(bnfactor$card, function(x) 1:x)
+    nrows <- length(values)
+    ncols <- length(variable_names) + 1
+    numbers <- lapply(variable_cardinality, function(x) 1:x)
     numbers <- expand.grid(numbers) %>% as.matrix()
     res <- matrix(data = 0, nrow = nrows, ncol = ncols)
     res[, 1:(ncols-1)] <- numbers
-    res[, ncols] <- bnfactor$val
-    colnames(res) <- c(bnfactor$var, "prob")
+    res[, ncols] <- values
+    colnames(res) <- c(variable_names, "prob")
     res
 }
 
 print.bnfactor <- function(bnfactor){
-  unfold_bnfactor(bnfactor)
+  bnfactor$print()
 }
 
-get_value_index <- function(bnfactor, variable_assignment){
+get_value_index <- function(variable_names, variable_cardinality, values, variable_assignment){
     
-    if(length(variable_assignment) != length(bnfactor$var)){
+    if(length(variable_assignment) != length(variable_names)){
         stop("Bad dimensions in variable assignment")
     }
     
-    unfolded <- unfold_bnfactor(bnfactor)
+    unfolded <- unfold_bnfactor(variable_names, variable_cardinality, values)
     logical_result <- rep(TRUE, nrow(unfolded))
     for(col in 1:(ncol(unfolded) - 1)){
         logical_result <- 
@@ -57,13 +57,4 @@ get_value_index <- function(bnfactor, variable_assignment){
     
     which(logical_result)
     
-}
-
-get_value <- function(bnfactor, variable_assignment){
-    bnfactor$val[get_value_index(bnfactor, variable_assignment)]
-}
-
-set_value <- function(bnfactor, variable_assignment, value){
-    bnfactor$val[get_value_index(bnfactor, variable_assignment)] <- value
-    bnfactor
 }
