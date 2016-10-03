@@ -58,3 +58,12 @@ get_value_index <- function(variable_names, variable_cardinality, values, variab
     which(logical_result)
     
 }
+
+`[<-.bnfactor` <- function(...){
+    arguments <- list(...)
+    bnfactor <- arguments[[1]]
+    variable_assignment <- arguments[1 + (1:length(bnfactor$get_variable_names()))] %>% unlist()
+    value <- arguments[[length(arguments)]]
+    bnfactor$set_value(variable_assignment, value)
+    bnfactor
+}
