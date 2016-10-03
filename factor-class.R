@@ -67,3 +67,13 @@ get_value_index <- function(variable_names, variable_cardinality, values, variab
     bnfactor$set_value(variable_assignment, value)
     bnfactor
 }
+
+bnfactor_product <- function(bnfactor1, bnfactor2){
+    
+    if(!(class(bnfactor1) == "bnfactor" && class(bnfactor2) == "bnfactor")){
+        stop("Arguments must be bnfactors")
+    }
+    
+    # Check that factors have at least one common variable
+    TODO
+}
