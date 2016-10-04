@@ -75,5 +75,33 @@ bnfactor_product <- function(bnfactor1, bnfactor2){
     }
     
     # Check that factors have at least one common variable
-    TODO
+    common_variable_index <- 
+        bnfactor1$get_variable_names() %in% bnfactor2$get_variable_names()
+    if(sum(common_variable_index) == 0)
+        stop("Factors do not have variables in common")
+    
+    # Check that common variables have the same cardinality
+    common_variables <- bnfactor1$get_variable_names()[common_variable_index]
+    cardinality1 <- bnfactor1$get_variable_cardinality()[common_variable_index]
+    index2 <- bnfactor2$get_variable_names() %in% common_variables
+    cardinality2 <- bnfactor2$get_variable_cardinality()[index2]
+    if(any(cardinality1 != cardinality2))
+        stop("Common variables have different cardinality")
+    
+    # Create result structure
+    result_var_names <- c(bnfactor1$get_variable_names(), 
+                          bnfactor2$get_variable_names())
+    result_var_card <- c(bnfactor1$get_variable_cardinality(),
+                         bnfactor2$get_variable_cardinality())
+    dupl <- duplicated(result_var_names)
+    result_var_names <- result_var_names[-dupl]
+    result_var_card <- result_var_card[-dupl]
+    result_values <- rep(0, prod(result_var_card))
+    
+    result <- create_bnfactor(variable_names = result_var_names,
+                              variable_cardinality = result_var_card,
+                              values = result_values)
+    
+    # Calculate values...
+    
 }
